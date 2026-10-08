@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NETWORK MINDS · Network Influence Propagation (C8)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#070d1f;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12);--tx:#e8eeff;--mut:#8fa0c8;--ac:#4cc9f0;--ac2:#7b6cff;--ok:#2ecc8f;--warn:#ffb454;--bad:#ff6b6b}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;color:var(--tx);line-height:1.5;
+background:radial-gradient(900px 500px at 15% -5%,#1b2a6b55,transparent),radial-gradient(800px 500px at 100% 20%,#4b1d8f33,transparent),var(--bg)}
+header{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:10px 24px;background:#070d1fcc;backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.logo b{letter-spacing:.14em;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent;font-size:1.15rem}
+.logo small{display:block;color:var(--mut);font-size:.7rem}
+nav{display:flex;gap:4px;flex-wrap:wrap}nav a{color:var(--mut);text-decoration:none;padding:6px 12px;border-radius:10px;font-size:.9rem}nav a:hover{color:var(--tx);background:var(--card)}
+.badge{font-size:.78rem;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
+.badge i{color:var(--ok);animation:pulse 1.6s infinite;font-style:normal}.badge.off i{color:var(--bad);animation:none}
+@keyframes pulse{50%{opacity:.3}}
+main{max-width:1180px;margin:auto;padding:0 18px 40px}section{padding:34px 0}
+h2{margin:0 0 6px;font-size:1.5rem}.sub{color:var(--mut);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;backdrop-filter:blur(12px);box-shadow:0 10px 30px #0006}
+.grid{display:grid;gap:18px}.g2{grid-template-columns:repeat(2,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:center;padding-top:50px}
+.hero h1{font-size:clamp(2rem,5vw,3.3rem);line-height:1.1;margin:0 0 14px}
+.hero h1 span{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
+.btn{border:0;cursor:pointer;font:inherit;font-weight:600;padding:12px 22px;border-radius:14px;color:#fff;background:linear-gradient(135deg,var(--ac2),#2f80ed);transition:.2s;text-decoration:none;display:inline-block}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px #4c6bff55}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
+.btn:disabled{opacity:.6;cursor:wait}
+.math{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.2rem;color:#cfe8ff}
+.tag{display:inline-block;padding:4px 12px;margin:4px 6px 0 0;border-radius:99px;background:#4cc9f022;border:1px solid #4cc9f044;font-size:.82rem;color:var(--ac)}
+.problem{border-color:#7b6cff77;background:linear-gradient(135deg,#7b6cff22,#4cc9f011)}
+label{font-size:.85rem;color:var(--mut)}
+input[type=number]{width:100%;background:#0b1430;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;text-align:center}
+input:focus{outline:2px solid var(--ac);border-color:transparent}input.bad{border-color:var(--bad)}
+input[type=range]{width:100%;accent-color:var(--ac2)}
+.people{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%}th,td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--line);font-size:.9rem;white-space:nowrap}th{color:var(--mut);font-weight:600}
+.mx{display:grid;grid-template-columns:auto repeat(5,minmax(62px,1fr)) auto;gap:6px;align-items:center;min-width:460px}
+.mx .h{font-size:.75rem;color:var(--mut);text-align:center}.rs{font-size:.78rem;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.rs.ok{color:var(--ok);background:#2ecc8f22}.rs.no{color:var(--bad);background:#ff6b6b22}
+.msg{margin-top:12px;font-weight:600}.msg.ok{color:var(--ok)}.msg.no{color:var(--bad)}
+.eq{padding:16px;border-radius:14px;background:#0b1430;border:1px solid var(--line);margin:10px 0;overflow-x:auto;white-space:nowrap}
+.big{font-size:1.7rem;font-weight:700}.lbl{color:var(--mut);font-size:.85rem}
+.res{text-align:center}.res .big{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
+.progress{height:6px;border-radius:9px;background:#fff1;overflow:hidden;margin:14px 0;opacity:0;transition:.2s}.progress.on{opacity:1}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .15s}
+.rounds{max-height:340px;overflow:auto}
+.chartbox{position:relative;height:340px}
+svg.net{width:100%;height:auto;display:block}.edge{stroke:var(--ac);fill:none;opacity:.5}.edge.live{stroke-dasharray:6 6;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.node{cursor:pointer;transition:r .3s}.node:hover{filter:brightness(1.3)}
+#tip{position:fixed;pointer-events:none;z-index:50;background:#0b1430ee;border:1px solid var(--ac);border-radius:12px;padding:8px 12px;font-size:.85rem;display:none}
+.concl{border-color:#2ecc8f66;background:linear-gradient(135deg,#2ecc8f1f,#4cc9f011);text-align:center}
+.concl p{font-size:1.15rem}
+.flow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px;font-size:.8rem;color:var(--mut)}.flow b{color:var(--ac)}
+.err{display:none;margin:14px 0;padding:12px 16px;border-radius:12px;background:#ff6b6b22;border:1px solid var(--bad)}
+footer{border-top:1px solid var(--line);text-align:center;padding:30px 18px;color:var(--mut);font-size:.88rem}footer b{color:var(--tx);letter-spacing:.12em}
+@media(max-width:900px){.hero,.g2{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}.people{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.g4{grid-template-columns:1fr}header{padding:10px 14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><b>NETWORK MINDS</b><small>Network Influence Propagation • C8</small></div>
+  <nav><a href="#home">Home</a><a href="#network">Network</a><a href="#matrix">Matrix</a><a href="#simulation">Simulation</a><a href="#results">Results</a><a href="#about">About</a></nav>
+  <span class="badge" id="status"><i>●</i> Mathematical Model Active</span>
+</header>
+
+<main>
+<section id="home" class="hero">
+  <div>
+    <h1><span>Network Influence</span> Propagation</h1>
+    <p class="sub" style="font-size:1.1rem">Discover how influence spreads through a social network and whether individual opinions eventually converge.</p>
+    <p><button class="btn" id="heroRun">▶ Start Simulation</button> <a class="btn ghost" href="#engine">Explore Mathematics</a></p>
+    <p class="math" style="margin-top:18px">Aⁿ → Consensus</p>
+  </div>
+  <div class="card"><svg class="net" id="heroGraph" viewBox="0 0 400 340"></svg></div>
+</section>
+
+<div class="err" id="errBox"></div>
+
+<section>
+  <div class="card problem">
+    <h2>Problem Statement</h2>
+    <p>A social network of 5 people with influence weights is represented using an influence propagation matrix A. Using Aⁿ via the Cayley-Hamilton theorem, determine the influence after n rounds of discussion, identify the most influential person, and determine whether everyone converges to the same opinion.</p>
+    <span class="tag">Matrix Powers</span><span class="tag">Cayley-Hamilton</span><span class="tag">Consensus Dynamics</span>
+  </div>
+</section>
+
+<section id="config">
+  <h2>Network Configuration</h2><p class="sub">Step 1 · Input: initial opinions x(0) and number of rounds n.</p>
+  <div class="card">
+    <div class="people" id="peopleInputs"></div>
+    <div class="grid g2" style="margin-top:18px;align-items:end">
+      <div><label for="roundsNum">Number of Rounds</label><input type="number" id="roundsNum" min="1" max="500" value="10"></div>
+      <div><label for="roundsRange">Drag to change rounds</label><input type="range" id="roundsRange" min="1" max="50" value="10"></div>
+    </div>
+    <p style="margin:18px 0 0"><button class="btn ghost" id="loadBench">Load Benchmark Dataset</button></p>
+  </div>
+</section>
+
+<section id="matrix">
+  <h2>Influence Propagation Matrix A</h2><p class="sub">Step 2 · Each row represents how a person is influenced by the network. Row Sum = 1.</p>
+  <div class="card"><div class="scroll"><div class="mx" id="matrixGrid"></div></div><div class="msg" id="matrixMsg"></div></div>
+</section>
+
+<section id="engine">
+  <h2>Mathematical Engine</h2><p class="sub">Step 3 · Aⁿ and the Cayley-Hamilton reduction (values computed by the Python backend).</p>
+  <div class="grid g2">
+    <div class="card"><h3 style="margin-top:0">Opinion Dynamics</h3>
+      <div class="eq math">x(n+1) = A x(n)</div><div class="eq math">x(n) = Aⁿ x(0)</div>
+      <p class="lbl">Each round, every person's new opinion is a weighted average of everyone's current opinions.</p></div>
+    <div class="card"><h3 style="margin-top:0">Cayley-Hamilton Reduction</h3>
+      <div class="eq math">p(λ) = det(λI − A)</div><div class="eq math">p(A) = 0</div>
+      <div class="lbl">Characteristic polynomial of the current A:</div>
+      <div class="eq math" id="polyText">p(λ) = …</div>
+      <div class="lbl">Rearranged for A⁵:</div>
+      <div class="eq math" id="reductionText">A⁵ = …</div>
+      <p class="lbl" id="chCheck"></p></div>
+  </div>
+</section>
+
+<section id="simulation">
+  <h2>Simulation</h2><p class="sub">Step 4 · Opinion propagation round by round.</p>
+  <div class="card">
+    <button class="btn" id="runBtn">RUN SIMULATION</button>
+    <div class="progress" id="progress"><div></div></div>
+    <div class="scroll rounds"><table id="roundsTable"><thead><tr><th>Round</th><th>Alice</th><th>Bob</th><th>Charlie</th><th>David</th><th>Eve</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</section>
+
+<section id="charts">
+  <div class="grid g2">
+    <div class="card"><h2>Opinion Convergence Over Time</h2><div class="chartbox"><canvas id="lineChart"></canvas></div></div>
+    <div class="card"><h2>Long-Term Influence Distribution</h2><div class="chartbox"><canvas id="donutChart"></canvas></div></div>
+  </div>
+</section>
+
+<section id="results">
+  <h2>Results Dashboard</h2><p class="sub">Step 5 · Influence and consensus.</p>
+  <div class="grid g4">
+    <div class="card res"><div class="lbl">Most Influential</div><div class="big" id="resWho">–</div><div id="resPct" class="lbl">–</div></div>
+    <div class="card res"><div class="lbl">Consensus Opinion</div><div class="big" id="resCons">–</div><div class="lbl" id="resSpread">–</div></div>
+    <div class="card res"><div class="lbl">Network Status</div><div class="big" id="resStatus">–</div><div class="lbl" id="resEig">–</div></div>
+    <div class="card res"><div class="lbl">Simulation Rounds</div><div class="big" id="resN">–</div><div class="lbl">discussion rounds</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="card concl">
+    <h2>Mathematical Conclusion</h2>
+    <p id="conclText">Run the simulation to see the conclusion.</p>
+    <div class="eq math" style="display:inline-block">Aⁿ → 1vᵀ</div>
+    <p class="lbl" id="limitGap"></p>
+    <div class="flow"><b>Input</b>→<b>Influence Matrix</b>→<b>Aⁿ</b>→<b>Opinion Propagation</b>→<b>Influence</b>→<b>Consensus</b>→<b>Conclusion</b></div>
+  </div>
+</section>
+
+<section id="network">
+  <h2>Network Visualization</h2><p class="sub">Node size = long-term influence · edge thickness = influence weight. Hover a person for details.</p>
+  <div class="card" style="max-width:720px;margin:auto"><svg class="net" id="mainGraph" viewBox="0 0 400 340"></svg></div>
+</section>
+</main>
+
+<footer id="about">
+  <b>NETWORK MINDS</b><br>B.Tech Mathematics Mini Project<br>Topic: Network Influence Propagation (C8)<br>
+  Mathematical Concepts: Matrix Powers • Cayley-Hamilton • Consensus Dynamics<br><br>Built with Python + NumPy + SymPy + Matplotlib
+</footer>
+<div id="tip"></div>
+
+<script>
+// ---------- Constants & state ----------
+const NAMES = ["Alice","Bob","Charlie","David","Eve"];
+const COLORS = ["#4cc9f0","#7b6cff","#2ecc8f","#ffb454","#ff6b9d"];
+const BENCH = {
+  opinions:[85,20,60,10,95],
+  matrix:[[.4,.3,.1,.1,.1],[.2,.5,.2,0,.1],[.1,.2,.4,.3,0],[.3,0,.1,.5,.1],[.1,.1,.2,.2,.4]],
+  rounds:10 };
+let result = null;            // last response from the backend
+let shownRound = 0;           // round currently displayed in the graph
+const $ = id => document.getElementById(id);
+
+// ---------- Build input widgets ----------
+const peopleBox = $("peopleInputs"), grid = $("matrixGrid");
+NAMES.forEach((n,i)=>{ peopleBox.insertAdjacentHTML("beforeend",
+  `<div><label for="op${i}">${n}</label><input type="number" id="op${i}" step="any"></div>`); });
+grid.insertAdjacentHTML("beforeend","<span></span>"+NAMES.map(n=>`<span class="h">${n.slice(0,3)}</span>`).join("")+"<span></span>");
+NAMES.forEach((n,i)=>{
+  grid.insertAdjacentHTML("beforeend",`<span class="h">${n}</span>`);
+  for(let j=0;j<5;j++) grid.insertAdjacentHTML("beforeend",`<input type="number" step="0.01" min="0" max="1" id="m${i}_${j}" aria-label="A row ${i+1} col ${j+1}">`);
+  grid.insertAdjacentHTML("beforeend",`<span class="rs" id="rs${i}"></span>`);
+});
+
+// ---------- Read / write form values ----------
+const readOpinions = () => NAMES.map((_,i)=>parseFloat($("op"+i).value));
+const readMatrix = () => NAMES.map((_,i)=>NAMES.map((_,j)=>parseFloat($(`m${i}_${j}`).value)));
+const readRounds = () => parseInt($("roundsNum").value,10);
+function loadInputs(d){
+  d.opinions.forEach((v,i)=>$("op"+i).value=v);
+  d.matrix.forEach((r,i)=>r.forEach((v,j)=>$(`m${i}_${j}`).value=v));
+  $("roundsNum").value=$("roundsRange").value=d.rounds; validate();
+}
+
+// ---------- Validation (returns list of error strings) ----------
+function validate(){
+  const errors=[], A=readMatrix(), x=readOpinions(), n=readRounds();
+  A.forEach((row,i)=>{
+    const bad=row.some(v=>isNaN(v)||v<0), sum=row.reduce((s,v)=>s+(isNaN(v)?0:v),0), ok=!bad&&Math.abs(sum-1)<0.01;
+    row.forEach((_,j)=>$(`m${i}_${j}`).classList.toggle("bad",isNaN(row[j])||row[j]<0));
+    $("rs"+i).textContent=`Σ ${sum.toFixed(2)}`; $("rs"+i).className="rs "+(ok?"ok":"no");
+    if(bad) errors.push(`Row ${i+1} must contain non-negative numbers`);
+    else if(!ok) errors.push(`Row ${i+1} must sum to 1`);
+  });
+  if(x.length!==5||x.some(isNaN)) errors.push("Exactly 5 initial opinions are required");
+  if(!(n>=1)) errors.push("Number of rounds must be a positive integer");
+  const m=$("matrixMsg"); m.className="msg "+(errors.length?"no":"ok");
+  m.innerHTML=errors.length?errors.map(e=>"⚠ "+e).join("<br>"):"✓ Valid Influence Matrix";
+  return errors;
+}
+document.querySelectorAll("#matrixGrid input,#peopleInputs input").forEach(e=>e.addEventListener("input",validate));
+$("roundsNum").addEventListener("input",()=>{ $("roundsRange").value=Math.min($("roundsNum").value,50); validate(); });
+$("roundsRange").addEventListener("input",()=>{ $("roundsNum").value=$("roundsRange").value; validate(); });
+
+// ---------- Charts ----------
+const lineChart=new Chart($("lineChart"),{type:"line",data:{labels:[],datasets:[]},options:{responsive:true,maintainAspectRatio:false,
+  interaction:{mode:"index",intersect:false},
+  scales:{x:{title:{display:true,text:"Discussion Round",color:"#8fa0c8"},ticks:{color:"#8fa0c8"},grid:{color:"#ffffff10"}},
+          y:{title:{display:true,text:"Opinion",color:"#8fa0c8"},ticks:{color:"#8fa0c8"},grid:{color:"#ffffff10"}}},
+  plugins:{legend:{labels:{color:"#e8eeff"}}}}});
+const donutChart=new Chart($("donutChart"),{type:"doughnut",data:{labels:NAMES,datasets:[{data:[],backgroundColor:COLORS,borderColor:"#070d1f",borderWidth:3,offset:[]}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{position:"bottom",labels:{color:"#e8eeff"}},
+  tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}});
+
+function drawCharts(r){
+  lineChart.data.labels=r.history.map((_,k)=>k);
+  lineChart.data.datasets=NAMES.map((n,i)=>({label:n,data:r.history.map(h=>h[i]),borderColor:COLORS[i],backgroundColor:COLORS[i],tension:.3,pointRadius:2}));
+  lineChart.data.datasets.push({label:"Consensus Opinion",data:r.history.map(()=>r.consensus),borderColor:"#ffffff",borderDash:[6,6],pointRadius:0,borderWidth:1.5});
+  lineChart.update();
+  const pct=r.influence.map(v=>v*100), top=pct.indexOf(Math.max(...pct));
+  donutChart.data.datasets[0].data=pct;
+  donutChart.data.datasets[0].offset=pct.map((_,i)=>i===top?18:0); // highlight most influential
+  donutChart.update();
+}
+
+// ---------- Network graph (SVG, used for hero + main section) ----------
+const pos=NAMES.map((_,i)=>{const a=-Math.PI/2+i*2*Math.PI/5;return[200+125*Math.cos(a),170+125*Math.sin(a)];});
+function drawGraph(svg,live){
+  const A=readMatrix(), r=result, infl=r?r.influence:[.2,.2,.2,.2,.2];
+  const opin=r?r.history[Math.min(shownRound,r.history.length-1)]:readOpinions();
+  let h="";
+  for(let i=0;i<5;i++)for(let j=0;j<5;j++){ if(i===j||!(A[i][j]>0))continue;   // edge j -> i (j influences i)
+    const [x1,y1]=pos[j],[x2,y2]=pos[i],mx=(x1+x2)/2+(y2-y1)*.12,my=(y1+y2)/2-(x2-x1)*.12;
+    h+=`<path class="edge ${live?"live":""}" d="M${x1},${y1} Q${mx},${my} ${x2},${y2}" stroke-width="${(A[i][j]*10).toFixed(2)}"/>`; }
+  NAMES.forEach((n,i)=>{ const rad=16+infl[i]*90;
+    h+=`<circle class="node" data-i="${i}" cx="${pos[i][0]}" cy="${pos[i][1]}" r="${rad}" fill="${COLORS[i]}" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/>
+        <text x="${pos[i][0]}" y="${pos[i][1]+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#06102a" pointer-events="none">${n}</text>`; });
+  svg.innerHTML=h;
+  svg.querySelectorAll(".node").forEach(el=>{
+    const i=+el.dataset.i, tip=$("tip");
+    el.onmousemove=e=>{ tip.style.display="block"; tip.style.left=e.clientX+14+"px"; tip.style.top=e.clientY+14+"px";
+      tip.innerHTML=`<b>${NAMES[i]}</b><br>Opinion: ${isNaN(opin[i])?"–":opin[i].toFixed(2)}<br>Influence: ${r?(infl[i]*100).toFixed(1)+"%":"run simulation"}`; };
+    el.onmouseleave=()=>tip.style.display="none";
+  });
+}
+const redrawGraphs=live=>{drawGraph($("heroGraph"),live);drawGraph($("mainGraph"),live);};
+
+// ---------- Fill tables / results ----------
+function fillRounds(r,upTo){
+  $("roundsTable").tBodies[0].innerHTML=r.history.slice(0,upTo+1).map((row,k)=>
+    `<tr><td><b>Round ${k}</b></td>${row.map(v=>`<td>${v.toFixed(2)}</td>`).join("")}</tr>`).join("");
+}
+function superscript(k){return String(k).replace(/\d/g,d=>"⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);}
+function fillMath(r){
+  const c=r.char_poly, fmt=v=>Math.abs(v).toPrecision(4).replace(/\.?0+$/,"");
+  let p="p(λ) = λ⁵", red="A⁵ = ";
+  c.slice(1).forEach((v,k)=>{ const pw=4-k, t=pw===0?"":pw===1?"λ":"λ"+superscript(pw);
+    p+=` ${v<0?"−":"+"} ${fmt(v)}${t}`;
+    const M=pw===0?"I":pw===1?"A":"A"+superscript(pw);                       // Cayley-Hamilton: move terms to the right side
+    red+=`${k===0?"":" "+(v<0?"+":"−")+" "}${k===0?(v<0?"":"−"):""}${fmt(v)}${M}`; });
+  $("polyText").textContent=p; $("reductionText").textContent=red;
+  $("chCheck").textContent=`Check: largest entry of |p(A)| = ${r.cayley_hamilton_residual.toExponential(2)} ≈ 0 ✓`;
+}
+function fillResults(r,n){
+  const top=r.influence.indexOf(Math.max(...r.influence));
+  $("resWho").textContent=r.most_influential; $("resPct").textContent=(r.influence[top]*100).toFixed(1)+"% long-term influence";
+  $("resCons").textContent=r.consensus.toFixed(2); $("resSpread").textContent=`spread after n rounds: ${r.spread.toFixed(3)}`;
+  $("resStatus").textContent=r.converging?"Converging":"Not converging"; $("resStatus").style.webkitTextFillColor=r.converging?"":"var(--warn)";
+  $("resEig").textContent=`|λ₂| = ${r.second_eigenvalue_modulus.toFixed(4)}`;
+  $("resN").textContent=n;
+  $("conclText").textContent=r.converging
+    ?`The opinions gradually converge toward a common consensus value (${r.consensus.toFixed(2)}). ${r.most_influential} has the highest long-term influence in the given network.`
+    :`The opinions do not settle on a single value for this matrix. ${r.most_influential} has the highest influence weight.`;
+  $("limitGap").textContent=`After ${n} rounds, max |Aⁿ − 1vᵀ| = ${r.limit_gap.toExponential(2)}`;
+}
+
+// ---------- Backend call ----------
+function showError(msg){const b=$("errBox");b.style.display=msg?"block":"none";b.textContent=msg?"⚠ "+msg:"";}
+function setOnline(ok){$("status").classList.toggle("off",!ok);$("status").innerHTML=ok?"<i>●</i> Mathematical Model Active":"<i>●</i> Backend Offline";}
+async function callBackend(){
+  const res=await fetch("/api/simulate",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({matrix:readMatrix(),opinions:readOpinions(),rounds:readRounds()})});
+  const data=await res.json(); if(!res.ok) throw new Error(data.error||"Server error"); return data;
+}
+
+// ---------- Run simulation: backend result is animated round by round ----------
+async function runSimulation(){
+  const errors=validate(); if(errors.length){showError(errors[0]);return;} showError("");
+  const btn=$("runBtn"), bar=$("progress"); btn.disabled=true; btn.textContent="Calculating…"; bar.classList.add("on");
+  try{
+    const r=await callBackend(); setOnline(true); result=r; const n=r.history.length-1;
+    fillMath(r); drawCharts(r); fillResults(r,n);
+    for(let k=0;k<=n;k++){ shownRound=k; fillRounds(r,k); redrawGraphs(true);
+      bar.firstElementChild.style.width=(k/n*100)+"%"; await new Promise(s=>setTimeout(s,Math.max(30,400/n))); }
+    redrawGraphs(false);
+  }catch(e){ setOnline(!(e instanceof TypeError)); showError(e instanceof TypeError?"Cannot reach the Flask backend. Start it with: python app.py":e.message); }
+  btn.disabled=false; btn.textContent="RUN SIMULATION"; setTimeout(()=>{bar.classList.remove("on");bar.firstElementChild.style.width=0;},600);
+}
+$("runBtn").onclick=runSimulation;
+$("heroRun").onclick=()=>{$("simulation").scrollIntoView();runSimulation();};
+$("loadBench").onclick=()=>{loadInputs(BENCH);runSimulation();};
+
+// ---------- Init: load benchmark and compute once so every panel is filled from the backend ----------
+loadInputs(BENCH); redrawGraphs(true); runSimulation();
+</script>
+</body>
+</html>
